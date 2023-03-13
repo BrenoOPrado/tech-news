@@ -24,7 +24,7 @@ def scrape_updates(html_content):
         selector = Selector(html_content)
 
         for article in selector.css('div.archive-wrap')[0].css('article'):
-            url_list.append(article.css('div.post-inner')[1]
+            url_list.append(article
                             .css('h2.entry-title > a::attr(href)').get())
 
     return url_list
