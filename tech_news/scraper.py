@@ -1,4 +1,6 @@
 from parsel import Selector
+from tech_news.database import create_news
+import re
 import requests
 import time
 
@@ -41,8 +43,44 @@ def scrape_next_page_link(html_content):
 # Requisito 4
 def scrape_news(html_content):
     """Seu código deve vir aqui"""
+    selector = Selector(html_content)
+    result = {}
+    count = 0
+
+    for rel in selector.css('link::attr(rel)').getall():
+        if rel == 'canonical':
+            result['url'] = selector.css('link::attr(href)').getall()[count]
+        count += 1
+    result['title'] = selector.css('h1.entry-title::text').get().strip('\xa0')
+    result['timestamp'] = selector.css('li.meta-date::text').get()
+    result['writer'] = selector.css('span.author > a.url.fn.n::text').get()
+    reading_time = ''
+    for letter in selector.css('li.meta-reading-time::text').get():
+        if letter.isdigit():
+            reading_time += letter
+    result['reading_time'] = int(reading_time)
+    result['category'] = selector.css('span.label::text').get()
+    result['summary'] = selector.css('div.entry-content > p,p::text').get()
+    result['summary'] = re.sub('<.*?>', '', result['summary']).strip()
+    return result
 
 
 # Requisito 5
 def get_tech_news(amount):
     """Seu código deve vir aqui"""
+    count = 0
+    news_content = []
+    url = 'https://blog.betrybe.com/'
+
+    while count < amount:
+        page = fetch(url)
+        url_list = scrape_updates(page)
+        for url in url_list:
+            if count < amount:
+                news_content.append(scrape_news(fetch(url)))
+                count += 1
+        url = scrape_next_page_link(page)
+
+    create_news(news_content)
+
+    return news_content
