@@ -1,3 +1,4 @@
+from parsel import Selector
 import requests
 import time
 
@@ -9,7 +10,6 @@ def fetch(url):
         response = requests.get(url)
         response.raise_for_status()
         time.sleep(1)
-        print(response.text)
     except (requests.HTTPError, requests.ReadTimeout):
         return None
 
@@ -19,6 +19,15 @@ def fetch(url):
 # Requisito 2
 def scrape_updates(html_content):
     """Seu código deve vir aqui"""
+    url_list = []
+    if html_content != '':
+        selector = Selector(html_content)
+
+        for article in selector.css('div.archive-wrap')[0].css('article'):
+            url_list.append(article.css('div.post-inner')[1]
+                            .css('h2.entry-title > a::attr(href)').get())
+
+    return url_list
 
 
 # Requisito 3
