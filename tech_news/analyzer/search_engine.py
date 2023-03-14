@@ -31,3 +31,7 @@ def search_by_date(date):
 # Requisito 9
 def search_by_category(category):
     """Seu código deve vir aqui"""
+    query = {'category': {'$regex': category, '$options': 'i'}}
+    news_obj = search_news(query)
+    news_tupla = [(item['title'], item['url']) for item in news_obj]
+    return news_tupla
